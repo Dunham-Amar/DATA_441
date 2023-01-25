@@ -1,10 +1,10 @@
-### DATA 441 - Advanced Applied <br> Machine Learning
+<img align="right" width="200" height="200" src="wm_logo.jpeg">
 
-<center>
-<img src="wm_logo.png">
-</center>
+### DATA 441 - Advanced Applied Machine Learning
 
 A portfolio of the labs and projects conducted during this course 
+
+<br>
 
 <center>
 
