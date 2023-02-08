@@ -1,8 +1,10 @@
-<img align="right" width="200" height="200" src="wm_logo.jpeg">
+<img align="right" width="130" height="130" src="wm_logo.jpeg">
 
 ### DATA 441 - Advanced Applied Machine Learning
-
+<br>
 A portfolio of the labs and projects conducted during this course 
+
+***
 
 <br>
 
