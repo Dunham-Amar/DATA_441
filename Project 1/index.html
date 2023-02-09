@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project1_DATA_441</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p><font face="courier" color="#007199" size="8pt"> Locally Weighted Regression <font></font></font></p>
+<hr>
+<blockquote>
+<p><font face="courier" color="#678D01" size="5pt"> Main Idea </font></p>
+</blockquote>
+<p>In a nonlinear distribution, linear trends can be interpreted locally using <strong>linear regression</strong> and <strong>kernel selection</strong></p>
+<br>
+<blockquote>
+<p><font face="courier" color="#678D01" size="5t"> Visual Intuition</font></p>
+</blockquote>
+<p><img src="https://drive.google.com/uc?export=view&amp;id=1Ppjr-v2wY5rr8am6kubshrU0FIRkTv0W" alt="Visual Intuitionl"></p>
+<p>We apply kernels at different regions of the data and the points closer to the kernel are heavily weighted having more influence on the local linear regressions</p>
+<br>
+<blockquote>
+<p><font face="courier" color="#678D01" size="5pt"> Linear Regression Implementation </font></p>
+</blockquote>
+<p>Linear regression describes the relationship between the input and output variables using linear combinations of the weights and observations to find the best fit line that minimizes the sum of squared errors</p>
+<br>
+<p><span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>y</mi><mo>=</mo><mi>β</mi><mo>⋅</mo><mi>X</mi><mo>+</mo><mi>σ</mi><mi>ϵ</mi></mrow><annotation encoding="application/x-tex"> y = \beta \cdot X + \sigma\epsilon </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.625em; vertical-align: -0.19444em;"></span><span class="mord mathnormal" style="margin-right: 0.03588em;">y</span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord mathnormal" style="margin-right: 0.05278em;">β</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.76666em; vertical-align: -0.08333em;"></span><span class="mord mathnormal" style="margin-right: 0.07847em;">X</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.43056em; vertical-align: 0em;"></span><span class="mord mathnormal" style="margin-right: 0.03588em;">σ</span><span class="mord mathnormal">ϵ</span></span></span></span></span></span></p>
+<br>
+<ul>
+<li>We pre-multiply this equation with the matrix of weights, with n weight different vectors for n different observations, to get:</li>
+</ul>
+<br>
+<p><span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>d</mi><mi>i</mi><mi>a</mi><mi>g</mi><mo stretchy="false">(</mo><mi>W</mi><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo><mo stretchy="false">)</mo><mi>y</mi><mo>=</mo><mi>d</mi><mi>i</mi><mi>a</mi><mi>g</mi><mo stretchy="false">(</mo><mi>W</mi><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo><mo stretchy="false">)</mo><mi>X</mi><mo>⋅</mo><mi>β</mi><mo>+</mo><mi>σ</mi><mi>d</mi><mi>i</mi><mi>a</mi><mi>g</mi><mo stretchy="false">(</mo><mi>W</mi><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo><mo stretchy="false">)</mo><mi>ϵ</mi></mrow><annotation encoding="application/x-tex"> diag(W(i))y = diag(W(i))X \cdot \beta + \sigma diag(W(i)) \epsilon</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 1em; vertical-align: -0.25em;"></span><span class="mord mathnormal">d</span><span class="mord mathnormal">ia</span><span class="mord mathnormal" style="margin-right: 0.03588em;">g</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right: 0.13889em;">W</span><span class="mopen">(</span><span class="mord mathnormal">i</span><span class="mclose">))</span><span class="mord mathnormal" style="margin-right: 0.03588em;">y</span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 1em; vertical-align: -0.25em;"></span><span class="mord mathnormal">d</span><span class="mord mathnormal">ia</span><span class="mord mathnormal" style="margin-right: 0.03588em;">g</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right: 0.13889em;">W</span><span class="mopen">(</span><span class="mord mathnormal">i</span><span class="mclose">))</span><span class="mord mathnormal" style="margin-right: 0.07847em;">X</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord mathnormal" style="margin-right: 0.05278em;">β</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 1em; vertical-align: -0.25em;"></span><span class="mord mathnormal" style="margin-right: 0.03588em;">σ</span><span class="mord mathnormal">d</span><span class="mord mathnormal">ia</span><span class="mord mathnormal" style="margin-right: 0.03588em;">g</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right: 0.13889em;">W</span><span class="mopen">(</span><span class="mord mathnormal">i</span><span class="mclose">))</span><span class="mord mathnormal">ϵ</span></span></span></span></span></span></p>
+<br>
+<ul>
+<li>And later solving for the predicted output, <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>y</mi><mo>^</mo></mover></mrow><annotation encoding="application/x-tex">\hat{y}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord mathnormal" style="margin-right: 0.03588em;">y</span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.19444em;"><span class="mord">^</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span></span></span></span></span>:</li>
+</ul>
+<p><span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mover accent="true"><mi>y</mi><mo>^</mo></mover><mo>=</mo><mi>X</mi><mo stretchy="false">(</mo><msup><mi>X</mi><mi>T</mi></msup><mi>W</mi><mi>X</mi><msup><mo stretchy="false">)</mo><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo stretchy="false">(</mo><msup><mi>X</mi><mi>T</mi></msup><mi>W</mi><mi>y</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\hat{y} = X(X^TWX)^{-1} (X^TWy)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord mathnormal" style="margin-right: 0.03588em;">y</span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.19444em;"><span class="mord">^</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 1.14133em; vertical-align: -0.25em;"></span><span class="mord mathnormal" style="margin-right: 0.07847em;">X</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right: 0.07847em;">X</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.891331em;"><span class="" style="top: -3.113em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right: 0.13889em;">T</span></span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right: 0.13889em;">W</span><span class="mord mathnormal" style="margin-right: 0.07847em;">X</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.864108em;"><span class="" style="top: -3.113em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right: 0.07847em;">X</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.891331em;"><span class="" style="top: -3.113em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right: 0.13889em;">T</span></span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right: 0.13889em;">W</span><span class="mord mathnormal" style="margin-right: 0.03588em;">y</span><span class="mclose">)</span></span></span></span></span></span></p>
+<p>When making predictions, <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>y</mi><mo>^</mo></mover></mrow><annotation encoding="application/x-tex">\hat{y}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord mathnormal" style="margin-right: 0.03588em;">y</span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.19444em;"><span class="mord">^</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span></span></span></span></span>, we use the linear combination of the weights and the observed output values, <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.625em; vertical-align: -0.19444em;"></span><span class="mord mathnormal" style="margin-right: 0.03588em;">y</span></span></span></span></span></p>
+<br>
+<blockquote>
+<p><font face="courier" color="#678D01" size="5pt"> LWR Hyperparameters </font></p>
+</blockquote>
+<ol>
+<li>
+<p><strong>Kernel function</strong></p>
+<ul>
+<li>
+<p>Weighs observations to apply a local linear regression</p>
+</li>
+<li>
+<p>Weights are based on the locality of the observations to the kernel’s curve mean, <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">X_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.83333em; vertical-align: -0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right: 0.07847em;">X</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.07847em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span></p>
+</li>
+<li>
+<p>Closer points have more weight than further ones<br>
+<br></p>
+</li>
+</ul>
+<p><strong>Kernel Types:</strong><br>
+<img src="https://drive.google.com/uc?export=view&amp;id=15cLPC0faZ2eAaFv6AvP4ZssyZQU7BYiI" alt="Kernel Types"></p>
+</li>
+</ol>
+<br>
+<ol start="2">
+<li>
+<p><strong>Tau (<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.43056em; vertical-align: 0em;"></span><span class="mord mathnormal" style="margin-right: 0.1132em;">τ</span></span></span></span></span>)</strong> = a scaling parameter that controls kernel bandwidth</p>
+<ul>
+<li>
+<p>Smoothens the curve based on the size of the span:</p>
+</li>
+<li>
+<p>Small span = more local and wiggly fit (overfit)</p>
+</li>
+<li>
+<p>Large span = global fit to data using all observations</p>
+</li>
+</ul>
+</li>
+</ol>
+<br>
+<blockquote>
+<p><font face="courier" color="#678D01" size="5pt"> Example with Real Data</font></p>
+</blockquote>
+<blockquote>
+<p><font face="courier" color="#02905A" size="4pt"> Goal</font><br>
+Apply a locally weighted regression on a univariate variable using different kernels and compare the model’s performance to a random forests and linear regression</p>
+</blockquote>
+<p>Dataset: <a href="https://archive.ics.uci.edu/ml/datasets/Power+consumption+of+Tetouan+city">Tetouan City Power Consumption</a>,  sourced by Abdulwahed Salam, Abdelaaziz El Hibaoui</p>
+<p>This dataset shows the power consumption of three different distribution networks in Tetouan, Morocco</p>
+<ul>
+<li>
+<p>52417 observations, 9 features</p>
+</li>
+<li>
+<p>Output: power consumption in megawatt-hours (MWh)</p>
+</li>
+</ul>
+<hr>
+<p>In the dataset, I chose to shorten the observations using the <code>DataFrame.truncate()</code> function:</p>
+<p><img src="https://drive.google.com/uc?export=view&amp;id=1ixEEd_OWVbJeZE0oNzZAMfoaSG34vOFW" alt="Dataset"></p>
+<br>
+<p>Useful functions that are implemented in the lowess scikit-learn function:</p>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">def</span>  <span class="token function">kernel_function</span><span class="token punctuation">(</span>xi<span class="token punctuation">,</span>x0<span class="token punctuation">,</span>kern<span class="token punctuation">,</span> tau<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token keyword">return</span> kern<span class="token punctuation">(</span><span class="token punctuation">(</span>xi <span class="token operator">-</span> x0<span class="token punctuation">)</span><span class="token operator">/</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token operator">*</span>tau<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<blockquote>
+<p>A bell shaped function with parameter <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.43056em; vertical-align: 0em;"></span><span class="mord mathnormal" style="margin-right: 0.1132em;">τ</span></span></span></span></span></p>
+</blockquote>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">def</span>  <span class="token function">weights_matrix</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span>x_new<span class="token punctuation">,</span>kern<span class="token punctuation">,</span>tau<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token keyword">if</span> np<span class="token punctuation">.</span>isscalar<span class="token punctuation">(</span>x_new<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">return</span> kernel_function<span class="token punctuation">(</span>x<span class="token punctuation">,</span>x_new<span class="token punctuation">,</span>kern<span class="token punctuation">,</span>tau<span class="token punctuation">)</span>
+	<span class="token keyword">else</span><span class="token punctuation">:</span>
+		n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>x_new<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span>kernel_function<span class="token punctuation">(</span>x<span class="token punctuation">,</span>x_new<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span>kern<span class="token punctuation">,</span>tau<span class="token punctuation">)</span> <span class="token keyword">for</span> i <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token comment"># all the rows represent the weights</span>
+</code></pre>
+<blockquote>
+<p>The weights matrix that will be multiplied to the observations</p>
+</blockquote>
+<br>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">def</span>  <span class="token function">ModelSelection</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> kernel<span class="token punctuation">,</span> tau<span class="token punctuation">,</span> estimators<span class="token punctuation">,</span> depth<span class="token punctuation">,</span> name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	
+	<span class="token triple-quoted-string string">"""
+	Function that visualizes and selects the best model validated off of the mean squared
+	error.  Models are locally weighted regression (lowess), random forest, and linear 
+	regression
+	"""</span>
+	
+	<span class="token comment">#applying cross-fold validation:</span>
+	kf <span class="token operator">=</span> KFold<span class="token punctuation">(</span>n_splits <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">,</span> shuffle <span class="token operator">=</span> <span class="token boolean">True</span><span class="token punctuation">,</span> random_state <span class="token operator">=</span> <span class="token number">123</span><span class="token punctuation">)</span>
+
+	y <span class="token operator">=</span> y<span class="token operator">/</span><span class="token number">1000</span>  <span class="token comment">#to scale down the values</span>
+	mse_test_lowess <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+	mse_test_rf <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+	mse_test_lr <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+	<span class="token keyword">for</span> idxtrain<span class="token punctuation">,</span> idxtest <span class="token keyword">in</span> kf<span class="token punctuation">.</span>split<span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token comment">#splits the input data into train/test sets</span>
+		xtrain <span class="token operator">=</span> x<span class="token punctuation">[</span>idxtrain<span class="token punctuation">]</span>
+		xtest <span class="token operator">=</span> x<span class="token punctuation">[</span>idxtest<span class="token punctuation">]</span>
+		ytrain <span class="token operator">=</span> y<span class="token punctuation">[</span>idxtrain<span class="token punctuation">]</span>
+		ytest <span class="token operator">=</span> y<span class="token punctuation">[</span>idxtest<span class="token punctuation">]</span>
+
+		<span class="token comment">#creating models</span>
+		model_lw <span class="token operator">=</span> Lowess<span class="token punctuation">(</span>kernel<span class="token punctuation">,</span> tau<span class="token punctuation">)</span>
+		model_rf <span class="token operator">=</span> RandomForestRegressor<span class="token punctuation">(</span>n_estimators <span class="token operator">=</span> estimators<span class="token punctuation">,</span> max_depth <span class="token operator">=</span> depth<span class="token punctuation">)</span>
+		model_lr <span class="token operator">=</span> LinearRegression<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+		<span class="token comment">#fitting the models</span>
+		model_lw<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>xtrain<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ytrain<span class="token punctuation">)</span>
+		model_rf<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>xtrain<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ytrain<span class="token punctuation">)</span>
+		model_lr<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>xtrain<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ytrain<span class="token punctuation">)</span>
+
+		<span class="token comment">#calculating the mse scores</span>
+		mse_test_lowess<span class="token punctuation">.</span>append<span class="token punctuation">(</span>mse<span class="token punctuation">(</span>ytest<span class="token punctuation">,</span> model_lw<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>xtest<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+		mse_test_rf<span class="token punctuation">.</span>append<span class="token punctuation">(</span>mse<span class="token punctuation">(</span>ytest<span class="token punctuation">,</span> model_rf<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>xtest<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+		mse_test_lr<span class="token punctuation">.</span>append<span class="token punctuation">(</span>mse<span class="token punctuation">(</span>ytest<span class="token punctuation">,</span> model_lr<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>xtest<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+		mse_all <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'Lowess'</span><span class="token punctuation">:</span> np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_test_lowess<span class="token punctuation">)</span><span class="token punctuation">,</span>
+		<span class="token string">'Random Forest'</span><span class="token punctuation">:</span> np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_test_rf<span class="token punctuation">)</span><span class="token punctuation">,</span>
+		<span class="token string">'Linear Regression'</span><span class="token punctuation">:</span> np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_test_lr<span class="token punctuation">)</span><span class="token punctuation">}</span>
+
+	<span class="token comment">#graphs output</span>
+	plt<span class="token punctuation">.</span>figure<span class="token punctuation">(</span>figsize <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">14</span><span class="token punctuation">,</span><span class="token number">9</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>scatter<span class="token punctuation">(</span>xtest<span class="token punctuation">,</span> ytest<span class="token punctuation">,</span> ec <span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> alpha <span class="token operator">=</span> <span class="token number">0.5</span><span class="token punctuation">)</span> <span class="token comment">#data points</span>
+
+	plt<span class="token punctuation">.</span>plot<span class="token punctuation">(</span>xtest<span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>xtest<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> model_lw<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>xtest<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>xtest<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> color <span class="token operator">=</span> <span class="token string">'red'</span><span class="token punctuation">,</span> lw <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">,</span> label <span class="token operator">=</span> <span class="token string">'Lowess'</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>plot<span class="token punctuation">(</span>xtest<span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>xtest<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> model_rf<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>xtest<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>xtest<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> color <span class="token operator">=</span> <span class="token string">'green'</span><span class="token punctuation">,</span> lw <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">,</span> label <span class="token operator">=</span> <span class="token string">'Random Forest'</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>plot<span class="token punctuation">(</span>xtest<span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>xtest<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> model_lr<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>xtest<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>xtest<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> color <span class="token operator">=</span> <span class="token string">'orange'</span><span class="token punctuation">,</span> lw <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">,</span> label <span class="token operator">=</span> <span class="token string">'Linear Regression'</span><span class="token punctuation">)</span>
+
+	text <span class="token operator">=</span> <span class="token string">'Lowess MSE: '</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_test_lowess<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'\n'</span> <span class="token operator">+</span> <span class="token string">'Random Forest MSE: '</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_test_rf<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'\n'</span> <span class="token operator">+</span> <span class="token string">'Linear Regression: '</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_test_lr<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'\n'</span> <span class="token operator">+</span> <span class="token string">'Best model: '</span> <span class="token operator">+</span> <span class="token builtin">min</span><span class="token punctuation">(</span>mse_all<span class="token punctuation">,</span> key <span class="token operator">=</span> mse_all<span class="token punctuation">.</span>get<span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">40</span><span class="token punctuation">,</span> text<span class="token punctuation">,</span> fontsize <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">,</span> bbox <span class="token operator">=</span> <span class="token builtin">dict</span><span class="token punctuation">(</span>facecolor <span class="token operator">=</span> <span class="token string">'white'</span><span class="token punctuation">,</span> ec <span class="token operator">=</span> <span class="token string">'black'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>title<span class="token punctuation">(</span><span class="token string">"Temperature and Power Consumption Relationship"</span><span class="token punctuation">,</span> fontsize <span class="token operator">=</span> <span class="token number">14</span><span class="token punctuation">,</span> fontweight <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>xlabel<span class="token punctuation">(</span><span class="token string">"Temperature ($^\circ$C)"</span><span class="token punctuation">,</span> fontsize <span class="token operator">=</span> <span class="token number">12</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>ylabel<span class="token punctuation">(</span><span class="token string">"Power Consumption (MWh)"</span><span class="token punctuation">,</span> fontsize <span class="token operator">=</span> <span class="token number">12</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>legend<span class="token punctuation">(</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>savefig<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token keyword">return</span>
+</code></pre>
+<p><strong>Gaussian kernel</strong><br>
+<img src="https://drive.google.com/uc?export=view&amp;id=16eCrPqjJMQeY4jSVns0YZPGopxDGii1Y" alt="Gaussian kernel"></p>
+<p><strong>Tricubic kernel</strong><br>
+<img src="https://drive.google.com/uc?export=view&amp;id=1gl-T9C-1jXbFNxKIGPe9XTCF9VtmGUud" alt="Tricubic kernel"></p>
+<p><strong>Quartic kernel</strong><br>
+<img src="https://drive.google.com/uc?export=view&amp;id=1pMh8Rgt04JYCCDy4VUx6rMI8i2J6wLGf" alt="Quartic kernel"></p>
+</div>
+</body>
+
+</html>
