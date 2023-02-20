@@ -1,0 +1,369 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project2_DATA_441</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p><font face="courier" color="e75252" size="8pt"> Gramfort’s Version of Lowess<font></font></font></p>
+<hr>
+<blockquote>
+<p><font face="courier" color="007199" size="5pt"> Main Idea </font></p>
+</blockquote>
+<p>This version defines a fraction of observations highlighted in a neighborhood that applies weights to from the selected kernel function that are then linearly regressed to be fit on those residuals</p>
+<p><img src="https://drive.google.com/uc?export=view&amp;id=1Ui64yzwldjX4wD6r3GFM-QFbA8pPU8Hu" alt="Visual"></p>
+<blockquote>
+<p>In a neighborhood, a fraction of the observations are selected to run local linear regressions on</p>
+</blockquote>
+<br>
+<blockquote>
+<p><font face="courier" color="007199" size="5pt"> Original Code and its Features </font></p>
+</blockquote>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">def</span>  <span class="token function">lowess_ag</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> f<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">.</span> <span class="token operator">/</span> <span class="token number">3</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token builtin">iter</span><span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+	<span class="token triple-quoted-string string">"""
+	Lowess smoother: Robust locally weighted regression.
+
+	The lowess function fits a nonparametric regression curve to a scatterplot.
+
+	The arrays x and y contain an equal number of elements; each pair
+
+	(x[i], y[i]) defines a data point in the scatterplot. The function returns
+
+	the estimated (smooth) values of y.
+
+	The smoothing span is given by f. A larger value for f will result in a
+
+	smoother curve. The number of robustifying iterations is given by iter. The
+
+	function will run faster with a smaller number of iterations.
+	"""</span>
+	
+	n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+	
+	r <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>ceil<span class="token punctuation">(</span>f <span class="token operator">*</span> n<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token comment"># r - represents the number of nearest neighbors for each zone</span>
+	<span class="token comment"># ceil forces r to be the next largest integer whole number </span>
+	
+	h <span class="token operator">=</span> <span class="token punctuation">[</span>np<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>np<span class="token punctuation">.</span><span class="token builtin">abs</span><span class="token punctuation">(</span>x <span class="token operator">-</span> x<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span>r<span class="token punctuation">]</span> <span class="token keyword">for</span> i <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">]</span>
+	<span class="token comment"># h - represents the maximum distance that you can be in a neighborhood, upper bound</span>
+	<span class="token comment"># this line sorts the distances from a data point to the ith observation and finds how many of those points are within the nearest r neighborhood</span>
+
+	w <span class="token operator">=</span> np<span class="token punctuation">.</span>clip<span class="token punctuation">(</span>np<span class="token punctuation">.</span><span class="token builtin">abs</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">]</span> <span class="token operator">-</span> x<span class="token punctuation">[</span><span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">/</span> h<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0.0</span><span class="token punctuation">,</span> <span class="token number">1.0</span><span class="token punctuation">)</span>
+	<span class="token comment"># removes weights that</span>
+	
+	w <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">-</span> w <span class="token operator">**</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token operator">**</span> <span class="token number">3</span>
+	<span class="token comment"># applies the kernel, specifically tricubic</span>
+	
+	yest <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span>n<span class="token punctuation">)</span>
+	delta <span class="token operator">=</span> np<span class="token punctuation">.</span>ones<span class="token punctuation">(</span>n<span class="token punctuation">)</span>
+	<span class="token keyword">for</span> iteration <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">iter</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">for</span> i <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+			weights <span class="token operator">=</span> delta <span class="token operator">*</span> w<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">,</span> i<span class="token punctuation">]</span>
+			b <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span>np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>weights <span class="token operator">*</span> y<span class="token punctuation">)</span><span class="token punctuation">,</span> np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>weights <span class="token operator">*</span> y <span class="token operator">*</span> x<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+			A <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">[</span>np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>weights<span class="token punctuation">)</span><span class="token punctuation">,</span> np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>weights <span class="token operator">*</span> x<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+			<span class="token punctuation">[</span>np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>weights <span class="token operator">*</span> x<span class="token punctuation">)</span><span class="token punctuation">,</span> np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>weights <span class="token operator">*</span> x <span class="token operator">*</span> x<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+			beta <span class="token operator">=</span> linalg<span class="token punctuation">.</span>solve<span class="token punctuation">(</span>A<span class="token punctuation">,</span> b<span class="token punctuation">)</span>
+			yest<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> beta<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> beta<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">*</span> x<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+		residuals <span class="token operator">=</span> y <span class="token operator">-</span> yest
+		s <span class="token operator">=</span> np<span class="token punctuation">.</span>median<span class="token punctuation">(</span>np<span class="token punctuation">.</span><span class="token builtin">abs</span><span class="token punctuation">(</span>residuals<span class="token punctuation">)</span><span class="token punctuation">)</span>
+		delta <span class="token operator">=</span> np<span class="token punctuation">.</span>clip<span class="token punctuation">(</span>residuals <span class="token operator">/</span> <span class="token punctuation">(</span><span class="token number">6.0</span> <span class="token operator">*</span> s<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span> 
+		delta <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">-</span> delta <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">**</span> <span class="token number">2</span> 
+	<span class="token keyword">return</span> yest
+</code></pre>
+<blockquote>
+<p><font face="courier" color="#4b7c86" size="4pt"> Hyperparameters</font></p>
+</blockquote>
+<ul>
+<li>
+<p><strong>f</strong> = fraction of how many observations to view in a neighborhood</p>
+<ul>
+<li>higher fraction = straighter line</li>
+<li>lower fraction = nonlinear line</li>
+</ul>
+</li>
+<li>
+<p><strong>iter</strong> =  tells how many times to rescale the weights based on the residuals</p>
+<ul>
+<li>More iterations will smooth the curve as residuals with less influence on the linear neighborhood trends are clipped out</li>
+</ul>
+</li>
+</ul>
+<br>
+<blockquote>
+<p><font face="courier" color="007199" size="5pt"> Modified Code </font></p>
+</blockquote>
+<p>This previous code only works for one-dimensional features.  Here is a modification of the code to accommodate for multiple features:</p>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">def</span>  <span class="token function">lw_ag_md</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> xnew<span class="token punctuation">,</span> kernel<span class="token punctuation">,</span> f <span class="token operator">=</span> <span class="token number">2</span><span class="token operator">/</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token builtin">iter</span> <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">,</span> intercept<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+	n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+	r <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>ceil<span class="token punctuation">(</span>f <span class="token operator">*</span> n<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	yest <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span>n<span class="token punctuation">)</span>
+
+	<span class="token keyword">if</span>  <span class="token builtin">len</span><span class="token punctuation">(</span>y<span class="token punctuation">.</span>shape<span class="token punctuation">)</span><span class="token operator">==</span><span class="token number">1</span><span class="token punctuation">:</span> <span class="token comment"># here we make column vectors</span>
+		y <span class="token operator">=</span> y<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">if</span>  <span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">.</span>shape<span class="token punctuation">)</span><span class="token operator">==</span><span class="token number">1</span><span class="token punctuation">:</span>
+		x <span class="token operator">=</span> x<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">if</span> intercept<span class="token punctuation">:</span>
+		x1 <span class="token operator">=</span> np<span class="token punctuation">.</span>column_stack<span class="token punctuation">(</span><span class="token punctuation">[</span>np<span class="token punctuation">.</span>ones<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">else</span><span class="token punctuation">:</span>
+		x1 <span class="token operator">=</span> x
+
+	<span class="token comment">#compute the max bounds for the neighborhoods</span>
+	h <span class="token operator">=</span> <span class="token punctuation">[</span>np<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>np<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span>np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x<span class="token operator">-</span>x<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">**</span><span class="token number">2</span><span class="token punctuation">,</span>axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span>r<span class="token punctuation">]</span> <span class="token keyword">for</span> i <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">]</span>
+	
+	w <span class="token operator">=</span> np<span class="token punctuation">.</span>clip<span class="token punctuation">(</span>dist<span class="token punctuation">(</span>x<span class="token punctuation">,</span>x<span class="token punctuation">)</span> <span class="token operator">/</span> h<span class="token punctuation">,</span> <span class="token number">0.0</span><span class="token punctuation">,</span> <span class="token number">1.0</span><span class="token punctuation">)</span>
+	
+	w <span class="token operator">=</span> kernel<span class="token punctuation">(</span>w<span class="token punctuation">)</span>
+
+	<span class="token comment">#Looping through all X-points</span>
+	delta <span class="token operator">=</span> np<span class="token punctuation">.</span>ones<span class="token punctuation">(</span>n<span class="token punctuation">)</span>
+	<span class="token keyword">for</span> iteration <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">iter</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">for</span> i <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+			W <span class="token operator">=</span> np<span class="token punctuation">.</span>diag<span class="token punctuation">(</span>delta<span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>np<span class="token punctuation">.</span>diag<span class="token punctuation">(</span>w<span class="token punctuation">[</span>i<span class="token punctuation">,</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+			b <span class="token operator">=</span> np<span class="token punctuation">.</span>transpose<span class="token punctuation">(</span>x1<span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>W<span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>y<span class="token punctuation">)</span>
+			A <span class="token operator">=</span> np<span class="token punctuation">.</span>transpose<span class="token punctuation">(</span>x1<span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>W<span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>x1<span class="token punctuation">)</span>
+			A <span class="token operator">=</span> A <span class="token operator">+</span> <span class="token number">0.0001</span><span class="token operator">*</span>np<span class="token punctuation">.</span>eye<span class="token punctuation">(</span>x1<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token comment"># if we want L2 regularization</span>
+			beta <span class="token operator">=</span> linalg<span class="token punctuation">.</span>solve<span class="token punctuation">(</span>A<span class="token punctuation">,</span> b<span class="token punctuation">)</span>
+			yest<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>dot<span class="token punctuation">(</span>x1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span>beta<span class="token punctuation">)</span>
+
+		residuals <span class="token operator">=</span> y<span class="token punctuation">.</span>ravel<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> yest
+		s <span class="token operator">=</span> np<span class="token punctuation">.</span>median<span class="token punctuation">(</span>np<span class="token punctuation">.</span><span class="token builtin">abs</span><span class="token punctuation">(</span>residuals<span class="token punctuation">)</span><span class="token punctuation">)</span>
+		delta <span class="token operator">=</span> np<span class="token punctuation">.</span>clip<span class="token punctuation">(</span>residuals <span class="token operator">/</span> <span class="token punctuation">(</span><span class="token number">6.0</span> <span class="token operator">*</span> s<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+		delta <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">-</span> delta <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">**</span> <span class="token number">2</span>
+
+	<span class="token comment"># part of the code involving the new data</span>
+	<span class="token keyword">if</span> x<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token operator">==</span><span class="token number">1</span><span class="token punctuation">:</span> <span class="token comment"># if the new data is 1-dimensional</span>
+		f <span class="token operator">=</span> interp1d<span class="token punctuation">(</span>x<span class="token punctuation">.</span>flatten<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>yest<span class="token punctuation">,</span>fill_value<span class="token operator">=</span><span class="token string">'extrapolate'</span><span class="token punctuation">)</span>
+	output <span class="token operator">=</span> f<span class="token punctuation">(</span>xnew<span class="token punctuation">)</span>
+	
+	<span class="token keyword">else</span><span class="token punctuation">:</span> <span class="token comment"># new data is multidimensional</span>
+		output <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>xnew<span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token keyword">for</span> i <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>xnew<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+			ind <span class="token operator">=</span> np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>np<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span>np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x<span class="token operator">-</span>xnew<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">**</span><span class="token number">2</span><span class="token punctuation">,</span>axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span>r<span class="token punctuation">]</span>
+			<span class="token comment"># the trick below is to have the delaunay triangulation work</span>
+			pca <span class="token operator">=</span> PCA<span class="token punctuation">(</span>n_components<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">)</span>
+			x_pca <span class="token operator">=</span> pca<span class="token punctuation">.</span>fit_transform<span class="token punctuation">(</span>x<span class="token punctuation">[</span>ind<span class="token punctuation">]</span><span class="token punctuation">)</span>
+			tri <span class="token operator">=</span> Delaunay<span class="token punctuation">(</span>x_pca<span class="token punctuation">,</span>qhull_options<span class="token operator">=</span><span class="token string">'QJ'</span><span class="token punctuation">)</span> <span class="token comment"># gives infinite loop if pca is not defined</span>
+			f <span class="token operator">=</span> LinearNDInterpolator<span class="token punctuation">(</span>tri<span class="token punctuation">,</span>y<span class="token punctuation">[</span>ind<span class="token punctuation">]</span><span class="token punctuation">)</span>
+			output<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> f<span class="token punctuation">(</span>pca<span class="token punctuation">.</span>transform<span class="token punctuation">(</span>xnew<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># the output may have NaN's where the data points from xnew are outside the convex hull of X</span>
+
+	<span class="token keyword">if</span>  <span class="token builtin">sum</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>isnan<span class="token punctuation">(</span>output<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">&gt;</span><span class="token number">0</span><span class="token punctuation">:</span>
+		g <span class="token operator">=</span> NearestNDInterpolator<span class="token punctuation">(</span>x<span class="token punctuation">,</span>y<span class="token punctuation">.</span>ravel<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+		output<span class="token punctuation">[</span>np<span class="token punctuation">.</span>isnan<span class="token punctuation">(</span>output<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> g<span class="token punctuation">(</span>xnew<span class="token punctuation">[</span>np<span class="token punctuation">.</span>isnan<span class="token punctuation">(</span>output<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">return</span> output
+</code></pre>
+<hr>
+<blockquote>
+<p><font face="courier" color="#007199" size="5pt"> Application to Real Data</font></p>
+</blockquote>
+<blockquote>
+<p><font face="courier" color="#4b7c86" size="4pt"> Goal</font><br>
+Compare the validated mean square error of Gramfort’s lowess version to lowess original version by doing a KFold cross-validation and using a grid search to see which hyperparameters to use for the models.</p>
+</blockquote>
+<p>Dataset: <a href="https://archive.ics.uci.edu/ml/datasets/car+evaluation">Cars</a>, sourced by Marko Bohanec</p>
+<p>Dataset showing different attributes related to a car’s MPG</p>
+<ul>
+<li>
+<p>398 observations, 8 attributes</p>
+</li>
+<li>
+<p>Output: fuel consumption, MPG, of the car</p>
+</li>
+</ul>
+<hr>
+<p>The selected features were the cylinder, weight, and horsepower of a car:</p>
+<p><img src="https://drive.google.com/uc?export=view&amp;id=1KnA886zYhigz0HBqAtfJziWlYNnnQuq-" alt="Dataset"></p>
+<p>Using the grid search from the two scikit-learn functions:</p>
+<p><strong>Gramfort</strong></p>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">class</span> <span class="token class-name">Lowess_AG_MD</span><span class="token punctuation">:</span>
+	<span class="token keyword">def</span>  <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> kernel <span class="token operator">=</span> Gaussian_lwg<span class="token punctuation">,</span> f <span class="token operator">=</span> <span class="token number">1</span><span class="token operator">/</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token builtin">iter</span> <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">,</span> intercept<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		self<span class="token punctuation">.</span>kernel <span class="token operator">=</span> kernel
+		self<span class="token punctuation">.</span>f <span class="token operator">=</span> f
+		self<span class="token punctuation">.</span><span class="token builtin">iter</span> <span class="token operator">=</span> <span class="token builtin">iter</span>
+		self<span class="token punctuation">.</span>intercept <span class="token operator">=</span> intercept
+
+	<span class="token keyword">def</span>  <span class="token function">fit</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		kernel <span class="token operator">=</span> self<span class="token punctuation">.</span>kernel
+		f <span class="token operator">=</span> self<span class="token punctuation">.</span>f
+		<span class="token builtin">iter</span> <span class="token operator">=</span> self<span class="token punctuation">.</span><span class="token builtin">iter</span>
+		self<span class="token punctuation">.</span>xtrain_ <span class="token operator">=</span> x
+		self<span class="token punctuation">.</span>yhat_ <span class="token operator">=</span> y
+
+	<span class="token keyword">def</span>  <span class="token function">predict</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x_new<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		check_is_fitted<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+		x <span class="token operator">=</span> self<span class="token punctuation">.</span>xtrain_
+		y <span class="token operator">=</span> self<span class="token punctuation">.</span>yhat_
+		kernel <span class="token operator">=</span> self<span class="token punctuation">.</span>kernel
+		f <span class="token operator">=</span> self<span class="token punctuation">.</span>f
+		<span class="token builtin">iter</span> <span class="token operator">=</span> self<span class="token punctuation">.</span><span class="token builtin">iter</span>
+		intercept <span class="token operator">=</span> self<span class="token punctuation">.</span>intercept
+		<span class="token keyword">return</span> lw_ag_md<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> x_new<span class="token punctuation">,</span> f<span class="token punctuation">,</span> <span class="token builtin">iter</span><span class="token punctuation">,</span> kernel<span class="token punctuation">,</span> intercept<span class="token punctuation">)</span>
+
+	<span class="token keyword">def</span>  <span class="token function">get_params</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> deep<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">return</span> <span class="token punctuation">{</span><span class="token string">"kernel"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>kernel<span class="token punctuation">,</span> <span class="token string">"f"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>f<span class="token punctuation">,</span> <span class="token string">"iter"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span><span class="token builtin">iter</span><span class="token punctuation">,</span> <span class="token string">"intercept"</span><span class="token punctuation">:</span>self<span class="token punctuation">.</span>intercept<span class="token punctuation">}</span> 
+
+	<span class="token keyword">def</span>  <span class="token function">set_params</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> <span class="token operator">**</span>parameters<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">for</span> parameter<span class="token punctuation">,</span> value <span class="token keyword">in</span> parameters<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+			<span class="token builtin">setattr</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> parameter<span class="token punctuation">,</span> value<span class="token punctuation">)</span>
+
+		<span class="token keyword">return</span>  self
+</code></pre>
+<pre class=" language-python"><code class="prism  language-python"><span class="token comment">#gramfort</span>
+lwg_pipe <span class="token operator">=</span> Pipeline<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token string">'zscores'</span><span class="token punctuation">,</span> scale<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token string">'lwg'</span><span class="token punctuation">,</span> Lowess_AG_MD<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+lwg_params <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">{</span><span class="token string">'lwg__kernel'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>Gaussian_lwg<span class="token punctuation">,</span> Tricubic_lwg<span class="token punctuation">,</span> Quartic_lwg<span class="token punctuation">]</span><span class="token punctuation">,</span>
+			   <span class="token string">'lwg__f'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token operator">/</span>i <span class="token keyword">for</span> i <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+			   <span class="token string">'lwg__iter'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">]</span>
+
+gs_lowess_g <span class="token operator">=</span> GridSearchCV<span class="token punctuation">(</span>lwg_pipe<span class="token punctuation">,</span> 
+						   param_grid <span class="token operator">=</span> lwg_params<span class="token punctuation">,</span> 
+						   scoring <span class="token operator">=</span> <span class="token string">'neg_mean_squared_error'</span><span class="token punctuation">,</span> 
+						   cv <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span>
+gs_lowess_g<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>x<span class="token punctuation">,</span>y<span class="token punctuation">)</span>
+gs_lowess_g<span class="token punctuation">.</span>best_params_
+</code></pre>
+<p><font face="courier" color="#4b7c86" size="3pt"> Output:</font> {‘lwg__f’: 0.3333333333333333,   ‘lwg__iter’: 1,  ‘lwg__kernel’: &lt;function <strong>main</strong>.Gaussian_lwg(w)&gt;}</p>
+<p><strong>Lowess</strong></p>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">class</span> <span class="token class-name">Lowess</span><span class="token punctuation">:</span>
+	<span class="token keyword">def</span>  <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> kernel <span class="token operator">=</span> Gaussian_lw<span class="token punctuation">,</span> tau<span class="token operator">=</span><span class="token number">0.05</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		self<span class="token punctuation">.</span>kernel <span class="token operator">=</span> kernel
+		self<span class="token punctuation">.</span>tau <span class="token operator">=</span> tau
+
+	<span class="token keyword">def</span>  <span class="token function">fit</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		kernel <span class="token operator">=</span> self<span class="token punctuation">.</span>kernel
+		tau <span class="token operator">=</span> self<span class="token punctuation">.</span>tau
+		self<span class="token punctuation">.</span>xtrain_ <span class="token operator">=</span> x
+		self<span class="token punctuation">.</span>yhat_ <span class="token operator">=</span> y
+
+	<span class="token keyword">def</span>  <span class="token function">predict</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x_new<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		check_is_fitted<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+		x <span class="token operator">=</span> self<span class="token punctuation">.</span>xtrain_
+		y <span class="token operator">=</span> self<span class="token punctuation">.</span>yhat_
+		w <span class="token operator">=</span> weights_matrix<span class="token punctuation">(</span>x<span class="token punctuation">,</span>x_new<span class="token punctuation">,</span>self<span class="token punctuation">.</span>kernel<span class="token punctuation">,</span>self<span class="token punctuation">.</span>tau<span class="token punctuation">)</span>
+		
+		<span class="token keyword">if</span> np<span class="token punctuation">.</span>isscalar<span class="token punctuation">(</span>x_new<span class="token punctuation">)</span><span class="token punctuation">:</span>
+			lm<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>np<span class="token punctuation">.</span>diag<span class="token punctuation">(</span>w<span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>x<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>np<span class="token punctuation">.</span>diag<span class="token punctuation">(</span>w<span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>y<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+			yest <span class="token operator">=</span> lm<span class="token punctuation">.</span>predict<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">[</span>x_new<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+				
+		<span class="token keyword">elif</span>  <span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">.</span>shape<span class="token punctuation">)</span><span class="token operator">==</span><span class="token number">1</span><span class="token punctuation">:</span>
+			n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>x_new<span class="token punctuation">)</span>
+			yest_test <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span>n<span class="token punctuation">)</span>
+			<span class="token comment">#Looping through all x-points</span>
+			<span class="token keyword">for</span> i <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+				lm<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>np<span class="token punctuation">.</span>diag<span class="token punctuation">(</span>w<span class="token punctuation">[</span>i<span class="token punctuation">,</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>x<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>np<span class="token punctuation">.</span>diag<span class="token punctuation">(</span>w<span class="token punctuation">[</span>i<span class="token punctuation">,</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>y<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+				yest_test<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> lm<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>x_new<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+		<span class="token keyword">else</span><span class="token punctuation">:</span>
+			n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>x_new<span class="token punctuation">)</span>
+			yest_test <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span>n<span class="token punctuation">)</span>
+			<span class="token comment">#Looping through all x-points</span>
+				<span class="token keyword">for</span> i <span class="token keyword">in</span>  <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+					lm<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>np<span class="token punctuation">.</span>diag<span class="token punctuation">(</span>w<span class="token punctuation">[</span>i<span class="token punctuation">,</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">,</span>np<span class="token punctuation">.</span>diag<span class="token punctuation">(</span>w<span class="token punctuation">[</span>i<span class="token punctuation">,</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span>dot<span class="token punctuation">(</span>y<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+					yest_test<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> lm<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>x_new<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+		<span class="token keyword">return</span> yest_test
+
+	<span class="token keyword">def</span> <span class="token function">get_params</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> deep<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">return</span> <span class="token punctuation">{</span><span class="token string">"kernel"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>kernel<span class="token punctuation">,</span> <span class="token string">"tau"</span><span class="token punctuation">:</span> self<span class="token punctuation">.</span>tau<span class="token punctuation">}</span>
+
+  
+
+	<span class="token keyword">def</span>  <span class="token function">set_params</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> <span class="token operator">**</span>parameters<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">for</span> parameter<span class="token punctuation">,</span> value <span class="token keyword">in</span> parameters<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+			<span class="token builtin">setattr</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> parameter<span class="token punctuation">,</span> value<span class="token punctuation">)</span>
+		<span class="token keyword">return</span>  self
+</code></pre>
+<pre class=" language-python"><code class="prism  language-python"><span class="token comment">#lowess</span>
+lw_pipe <span class="token operator">=</span> Pipeline<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token string">'zscores'</span><span class="token punctuation">,</span> scale<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token string">'lw'</span><span class="token punctuation">,</span> Lowess<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+lw_params <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">{</span><span class="token string">'lw__kernel'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>Gaussian_lw<span class="token punctuation">,</span> Tricubic_lw<span class="token punctuation">,</span> Quartic_lw<span class="token punctuation">]</span><span class="token punctuation">,</span>
+			  <span class="token string">'lw__tau'</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token number">0.05</span><span class="token punctuation">,</span> <span class="token number">0.02</span><span class="token punctuation">,</span> <span class="token number">0.2</span><span class="token punctuation">,</span> <span class="token number">0.5</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">]</span>
+
+gs_lowess <span class="token operator">=</span> GridSearchCV<span class="token punctuation">(</span>lw_pipe<span class="token punctuation">,</span> 
+						 param_grid <span class="token operator">=</span> lw_params<span class="token punctuation">,</span>
+						 scoring <span class="token operator">=</span> <span class="token string">'neg_mean_squared_error'</span><span class="token punctuation">,</span>
+						 cv <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">)</span>
+gs_lowess<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>x<span class="token punctuation">,</span>y<span class="token punctuation">)</span>
+gs_lowess<span class="token punctuation">.</span>best_params_
+</code></pre>
+<p><font face="courier" color="#4b7c86" size="3pt"> Output:</font> {‘lw__kernel’: &lt;function <strong>main</strong>.Tricubic_lw(x)&gt;,  ‘lw__tau’: 0.5}</p>
+<p>Running KFold cross-validation using the hyperparameters outputted from the grid search:</p>
+<pre class=" language-python"><code class="prism  language-python"><span class="token keyword">def</span>  <span class="token function">ModelSelection_md</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> kernel_lw<span class="token punctuation">,</span> kernel_lwg<span class="token punctuation">,</span> tau<span class="token punctuation">,</span> f<span class="token punctuation">,</span> <span class="token builtin">iter</span><span class="token punctuation">,</span> name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token triple-quoted-string string">'''
+	Function that selects the best model from either Lowess or Gramfort's Lowess version based off
+	the validated mean square error
+
+	x - multidimensional
+	y - one-dimensional
+	name - filename for saving graph
+	'''</span>
+
+	<span class="token comment">#applying cross-fold validation:</span>
+	kf <span class="token operator">=</span> KFold<span class="token punctuation">(</span>n_splits <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">,</span> shuffle <span class="token operator">=</span> <span class="token boolean">True</span><span class="token punctuation">,</span> random_state <span class="token operator">=</span> <span class="token number">123</span><span class="token punctuation">)</span>
+
+	mse_lw <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+	mse_lwg <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+	mse_all <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+	<span class="token keyword">for</span> idxtrain<span class="token punctuation">,</span> idxtest <span class="token keyword">in</span> kf<span class="token punctuation">.</span>split<span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token comment">#splits the input data into train/test sets</span>
+
+		xtrain <span class="token operator">=</span> scale<span class="token punctuation">.</span>fit_transform<span class="token punctuation">(</span>x<span class="token punctuation">[</span>idxtrain<span class="token punctuation">]</span><span class="token punctuation">)</span>
+		xtest <span class="token operator">=</span> scale<span class="token punctuation">.</span>transform<span class="token punctuation">(</span>x<span class="token punctuation">[</span>idxtest<span class="token punctuation">]</span><span class="token punctuation">)</span>
+		ytrain <span class="token operator">=</span> y<span class="token punctuation">[</span>idxtrain<span class="token punctuation">]</span>
+		ytest <span class="token operator">=</span> y<span class="token punctuation">[</span>idxtest<span class="token punctuation">]</span>
+
+		<span class="token comment">#creating, fitting, and predicting models:</span>
+
+		<span class="token comment">#lowess</span>
+		model_lw <span class="token operator">=</span> Lowess<span class="token punctuation">(</span>kernel_lw<span class="token punctuation">,</span> tau<span class="token punctuation">)</span>
+		model_lw<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>xtrain<span class="token punctuation">,</span> ytrain<span class="token punctuation">)</span>
+		yhat_lw <span class="token operator">=</span> model_lw<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>xtest<span class="token punctuation">)</span>
+
+		<span class="token comment">#gramfort</span>
+		<span class="token comment">#for gramfort's verison, the function def was used instead of creating a model due to shape errors with</span>
+		<span class="token comment">#the predict function in the scikit-learn function</span>
+		yhat_lwg <span class="token operator">=</span> lw_ag_md<span class="token punctuation">(</span>xtrain<span class="token punctuation">,</span> ytrain<span class="token punctuation">,</span> xtest<span class="token punctuation">,</span> kernel_lwg<span class="token punctuation">,</span> f<span class="token punctuation">,</span> <span class="token builtin">iter</span><span class="token punctuation">,</span> intercept<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+
+		<span class="token comment">#calculating the mse scores:</span>
+		mse_lw<span class="token punctuation">.</span>append<span class="token punctuation">(</span>mse<span class="token punctuation">(</span>ytest<span class="token punctuation">,</span> yhat_lw<span class="token punctuation">)</span><span class="token punctuation">)</span>
+		mse_lwg<span class="token punctuation">.</span>append<span class="token punctuation">(</span>mse<span class="token punctuation">(</span>ytest<span class="token punctuation">,</span> yhat_lwg<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+		mse_all <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'Lowess'</span><span class="token punctuation">:</span> np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_lw<span class="token punctuation">)</span><span class="token punctuation">,</span>
+				   <span class="token string">"Gramfort's Lowess"</span><span class="token punctuation">:</span> np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_lwg<span class="token punctuation">)</span><span class="token punctuation">}</span>
+
+	<span class="token comment">#graph output:</span>
+	x_vis <span class="token operator">=</span> xtest<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">]</span>
+	plt<span class="token punctuation">.</span>figure<span class="token punctuation">(</span>figsize <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>scatter<span class="token punctuation">(</span>x_vis<span class="token punctuation">,</span> ytest<span class="token punctuation">,</span> ec <span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">,</span> alpha <span class="token operator">=</span> <span class="token number">0.5</span><span class="token punctuation">)</span> <span class="token comment">#data points</span>
+
+	plt<span class="token punctuation">.</span>plot<span class="token punctuation">(</span>x_vis<span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>x_vis<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> yhat_lw<span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>x_vis<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token string">'g'</span><span class="token punctuation">,</span> label <span class="token operator">=</span> <span class="token string">'Lowess'</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>plot<span class="token punctuation">(</span>x_vis<span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>x_vis<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> yhat_lwg<span class="token punctuation">[</span>np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>x_vis<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token string">'r'</span><span class="token punctuation">,</span> label <span class="token operator">=</span> <span class="token string">"Gramfort's Lowess"</span><span class="token punctuation">)</span>
+
+	text <span class="token operator">=</span> <span class="token string">'Lowess MSE: '</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_lw<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'\n'</span> <span class="token operator">+</span> <span class="token string">"Gramfort's Lowess MSE: "</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>mse_lwg<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'\n'</span> <span class="token operator">+</span> <span class="token string">'Best model: '</span> <span class="token operator">+</span> <span class="token builtin">min</span><span class="token punctuation">(</span>mse_all<span class="token punctuation">,</span> key <span class="token operator">=</span> mse_all<span class="token punctuation">.</span>get<span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token number">0.5</span><span class="token punctuation">,</span> <span class="token number">35</span><span class="token punctuation">,</span> text<span class="token punctuation">,</span> fontsize <span class="token operator">=</span> <span class="token number">8</span><span class="token punctuation">,</span> bbox <span class="token operator">=</span> <span class="token builtin">dict</span><span class="token punctuation">(</span>facecolor <span class="token operator">=</span> <span class="token string">'white'</span><span class="token punctuation">,</span> ec <span class="token operator">=</span> <span class="token string">'lightgrey'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+	plt<span class="token punctuation">.</span>title<span class="token punctuation">(</span><span class="token string">"Relationships of a Car's Cylinder, Weight, and Horsepower to MPG"</span><span class="token punctuation">,</span> fontsize <span class="token operator">=</span> <span class="token number">14</span><span class="token punctuation">,</span> fontweight <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>xlabel<span class="token punctuation">(</span><span class="token string">"Features"</span><span class="token punctuation">,</span> fontsize <span class="token operator">=</span> <span class="token number">12</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>ylabel<span class="token punctuation">(</span><span class="token string">"MPG"</span><span class="token punctuation">,</span> fontsize <span class="token operator">=</span> <span class="token number">12</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>legend<span class="token punctuation">(</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>savefig<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">return</span>
+</code></pre>
+<pre class=" language-python"><code class="prism  language-python">ModelSelection_md<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> Tricubic_lw<span class="token punctuation">,</span> Gaussian_lwg<span class="token punctuation">,</span> tau <span class="token operator">=</span> <span class="token number">0.5</span><span class="token punctuation">,</span> f <span class="token operator">=</span> <span class="token number">1</span><span class="token operator">/</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token builtin">iter</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> name <span class="token operator">=</span> <span class="token string">'lowess_graphs'</span><span class="token punctuation">)</span>
+</code></pre>
+<p><img src="https://drive.google.com/uc?export=view&amp;id=1F1y-qaNjaPcRxCnq2tyyPUAs144vIgXd" alt="Lowess Graph"></p>
+</div>
+</body>
+
+</html>
