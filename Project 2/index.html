@@ -15,7 +15,7 @@
 <p><font face="courier" color="007199" size="5pt"> Main Idea </font></p>
 </blockquote>
 <p>This version defines a fraction of observations highlighted in a neighborhood that applies weights to from the selected kernel function that are then linearly regressed to be fit on those residuals</p>
-<p><img src="https://drive.google.com/uc?export=view&amp;id=1Ui64yzwldjX4wD6r3GFM-QFbA8pPU8Hu" alt="Visual"></p>
+<p><img src="gramfort_visual.svg" alt="Visual"></p>
 <blockquote>
 <p>In a neighborhood, a fraction of the observations are selected to run local linear regressions on</p>
 </blockquote>
@@ -169,7 +169,7 @@
 <p><font face="courier" color="#4b7c86" size="4pt"> Goal</font><br>
 Compare the validated mean square error of Gramfort’s lowess version to lowess original version by doing a KFold cross-validation and using a grid search to see which hyperparameters to use for the models.</p>
 </blockquote>
-<p>Dataset: <a href="https://archive.ics.uci.edu/ml/datasets/car+evaluation">Cars</a>, sourced by Marko Bohanec</p>
+<p>Dataset: <a img src="car_data.png">Cars</a>, sourced by Marko Bohanec</p>
 <p>Dataset showing different attributes related to a car’s MPG</p>
 <ul>
 <li>
@@ -362,7 +362,7 @@ gs_lowess<span class="token punctuation">.</span>best_params_
 </code></pre>
 <pre class=" language-python"><code class="prism  language-python">ModelSelection_md<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> Tricubic_lw<span class="token punctuation">,</span> Gaussian_lwg<span class="token punctuation">,</span> tau <span class="token operator">=</span> <span class="token number">0.5</span><span class="token punctuation">,</span> f <span class="token operator">=</span> <span class="token number">1</span><span class="token operator">/</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token builtin">iter</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> name <span class="token operator">=</span> <span class="token string">'lowess_graphs'</span><span class="token punctuation">)</span>
 </code></pre>
-<p><img src="https://drive.google.com/uc?export=view&amp;id=1F1y-qaNjaPcRxCnq2tyyPUAs144vIgXd" alt="Lowess Graph"></p>
+<p><img src="lowess_graph.png" alt="Lowess Graph"></p>
 </div>
 </body>
 
