@@ -208,7 +208,7 @@ Dataset showing different attributes related to a car’s MPG</p>
 	<span class="token keyword">return</span> output
 </code></pre>
 <br>
-<p><font face="courier" color="18AD74" size="5pt"> Implementing Boosted Regressor Function </font></p>
+<p><font face="courier" color="18AD74" size="5pt"> KFold Cross-Validation to Compare Loss Between Boosted and Original Regressors </font></p>
 <pre class=" language-python"><code class="prism  language-python"><span class="token keyword">def</span>  <span class="token function">RegressorSelector</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> kernel<span class="token punctuation">,</span> f<span class="token punctuation">,</span> <span class="token builtin">iter</span><span class="token punctuation">,</span> intercept <span class="token operator">=</span> <span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
 
 	mse_bgl <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token comment"># boosted gramfort's lowess regressor</span>
