@@ -245,6 +245,100 @@ Dataset showing different attributes related to a car’s MPG</p>
 <br>
 <p><font face="courier" color="18AD74" size="5pt"> Results </font></p>
 <br>
+<table>
+    <thead>
+       <th colspan = '3'>Concrete Dataset</th>
+    </thead>
+    
+    <style>
+      table,
+      th,
+      td {
+        padding: 10px;
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+    </style>
+    
+    <thead>
+        <tr>
+            <th>Kernel</th>
+            <th style="text-align:center">Boosted Gramfort Lowess</th>
+            <th style="text-align:center">Gramfort Lowess</th>
+        </tr>
+    </thead>
+    
+    <tbody>
+        <tr>
+            <td>Gaussian</td>
+            <td style="text-align:left">110.95822523783988</td>
+            <td style="text-align:left">110.95822523783988</td>
+        </tr>
+        <tr>
+            <td>Tricubic</td>
+            <td style="text-align:left">55.393498992334585</td>
+            <td style="text-align:left">55.393498992334585</td>
+        </tr>
+        <tr>
+            <td>Quartic</td>
+            <td style="text-align:left">55.15738154097464</td>
+            <td style="text-align:left">55.15738154097464</td>
+        </tr>
+        <tr>
+            <td>Epanechnikov</td>
+            <td style="text-align:left">56.6703042571015</td>
+            <td style="text-align:left">56.6703042571015</td>
+        </tr>
+    </tbody>
+</table>
+<br>
+<table>
+    <thead>
+       <th colspan = '3'>Cars Dataset</th>
+    </thead>
+    
+    <style>
+      table,
+      th,
+      td {
+        padding: 10px;
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+    </style>
+    
+    <thead>
+        <tr>
+            <th>Kernel</th>
+            <th style="text-align:center">Boosted Gramfort Lowess</th>
+            <th style="text-align:center">Gramfort Lowess</th>
+        </tr>
+    </thead>
+    
+    <tbody>
+        <tr>
+            <td>Gaussian</td>
+            <td style="text-align:left">17.84289279195182</td>
+            <td style="text-align:left">17.84289279195182</td>
+        </tr>
+        <tr>
+            <td>Tricubic</td>
+            <td style="text-align:left">18.007001959609035</td>
+            <td style="text-align:left">18.007001959609035</td>
+        </tr>
+        <tr>
+            <td>Quartic</td>
+            <td style="text-align:left">17.947964654017753</td>
+            <td style="text-align:left">17.947964654017753</td>
+        </tr>
+        <tr>
+            <td>Epanechnikov</td>
+            <td style="text-align:left">17.563867846354498</td>
+            <td style="text-align:left">17.563867846354498</td>
+        </tr>
+    </tbody>
+</table>
+<br>
 <p>For the concrete dataset, the best regressor to use is the boosted gramfort lowess and for the cars dataset the regressor selection does not make a difference for the model’s loss.</p>
 </div>
 </body>
